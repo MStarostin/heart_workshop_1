@@ -89,12 +89,6 @@ class ClassifierModel():
                 "Модель не обучена. Сначала вызовите метод fit()")
         return self.model.predict(X_pred)
 
-    def predict_proba(self, X_pred):
-        if self.model is None:
-            raise ValueError(
-                "Модель не обучена. Сначала вызовите метод fit()")
-        return self.model.predict_proba(X_pred)
-
 
 def load_model(model_path):
     return joblib.load(model_path)
@@ -111,30 +105,32 @@ def to_snake_case(df):
 def pre_pocessing(data_path):
     df = pd.read_csv(data_path)
     df = to_snake_case(df)
-    df_id = df['id']
     df = df.drop(['id', 'unnamed_0'], axis=1)
     df['gender'] = df['gender'].replace({'Male': 1, 'Female': 0})
     df['gender'] = pd.to_numeric(df['gender'])
-    return df, df_id
+    return df
 
 
-def post_processing(df_id, y_prediction):
+def post_processing(data_path, y_prediction):
+    df = pd.read_csv(data_path)
     y_prediction = pd.Series(y_prediction)
-    y_prediction.info()
-    predictions = pd.concat([df_id, y_prediction], axis=1)
+    predictions = pd.concat([df['id'], y_prediction], axis=1)
     predictions.columns = ['id', 'prediction']
     predictions['prediction'] = predictions['prediction'].astype(int)
+    predictions.info()
     return predictions
 
 
 def predict_class(model, data_path):
-    df, df_id = pre_pocessing(data_path)
+    df = pre_pocessing(data_path)
+    df = pd.DataFrame(df)
     predictions = model.predict(df)
-    return post_processing(df_id, predictions)
+    return post_processing(data_path, predictions)
 
 
 def train_and_save_model():
     df = pre_pocessing(TRAIN_DATA_CSV)
+    print(type(df))
     model = ClassifierModel(random_state=RANDOM_STATE)
     model.fit(df=df, target_attr=TARGET_ATTR)
     joblib.dump(model, MODEL_NAME_PKL)
