@@ -128,9 +128,8 @@ def predict_class(model, data_path):
     return post_processing(data_path, predictions)
 
 
-def train_and_save_model():
+def fit_save_model():
     df = pre_pocessing(TRAIN_DATA_CSV)
-    print(type(df))
     model = ClassifierModel(random_state=RANDOM_STATE)
     model.fit(df=df, target_attr=TARGET_ATTR)
     joblib.dump(model, MODEL_NAME_PKL)
