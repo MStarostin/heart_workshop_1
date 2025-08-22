@@ -46,14 +46,28 @@ templates = Jinja2Templates(directory="templates")
 
 
 # Проверка работоспособности
-@app.get("/health")
+@app.get(
+    "/health",
+    summary="Поверка работы фреймворка",
+    description="Возвращает старус ОК",
+    tags=["health"]
+    )
 def health():
     return {"status": "OK"}
 
 
 # Главная страница - шаблон загрузки датасета
-@app.get("/")
+@app.get(
+    "/",
+    summary="Форма загрузки датанных для предсказаний",
+    description="Передает файл формата сsv с данными пациентов для предсказаний",
+    tags=["index"]
+    )
 def main(request: Request):
+    '''
+    Функция рендеринкга главной страницы приложения с формой загрузки csv 
+    файла данных, на базе которых нужно предсказать риск сердечного приступа
+    '''
     return templates.TemplateResponse("start_form.html",
                                       {"request": request})
 
@@ -66,6 +80,11 @@ def main(request: Request):
     tags=["predictions"]
 )
 def predict(file: UploadFile, request: Request):
+    '''
+    Функция получения предсказаний. Сохраняет полученный csv файл в папку tmp,
+    проводит предсказания, выводит их на экран в формате JSON и удаляет файл
+    с данными для предсказаний
+    '''
     temp_dir = 'tmp'
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
